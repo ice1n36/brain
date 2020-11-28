@@ -27,7 +27,7 @@ container_image(
     name = "brain_container_image",
     base = "@alpine_linux_amd64//image",
     entrypoint = ["/brain"],
-    ports = ["8081"],
+    ports = ["80"],
     files = [":brain"],
 )
 

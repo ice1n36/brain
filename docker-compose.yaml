@@ -3,3 +3,5 @@ services:
   brain:
     restart: always
     image: ice1n36/brain
+    ports:
+        - "8081:80"

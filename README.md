@@ -18,7 +18,7 @@ docker pull ice1n36/brain:latest
 
 ## Run
 ```
-docker run --rm -it -d -p8081:8081 ice1n36/brain
+docker run --rm -it -d -p8081:80 ice1n36/brain
 ```
 
 ### Docker Compose
@@ -49,7 +49,7 @@ bazel run :brain
 ### Docker
 ```
 bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 :brain_container_image
-docker run --rm -it -d -p8081:8081 bazel:brain_container_image
+docker run --rm -it -d -p8081:80 bazel:brain_container_image
 ```
 
 ## Publish

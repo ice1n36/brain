@@ -14,7 +14,7 @@ func Register() {
 		fmt.Fprintf(w, "<h1>Hello from Brain!\n</h1>")
 	})
 
-	http.ListenAndServe(":8081", r)
+	http.ListenAndServe(":80", r)
 }
 
 func main() {
