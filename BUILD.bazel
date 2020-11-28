@@ -1,0 +1,40 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/ice1n36/brain
+gazelle(name = "gazelle")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "github.com/ice1n36/brain",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_gorilla_mux//:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "brain",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+# load bazel rules for docker images
+load("@io_bazel_rules_docker//container:container.bzl", "container_push", "container_image")
+
+container_image(
+    name = "brain_container_image",
+    base = "@alpine_linux_amd64//image",
+    entrypoint = ["/brain"],
+    ports = ["8081"],
+    files = [":brain"],
+)
+
+container_push(
+    name = "brain_container_image_push",
+    format = "Docker",
+    image = ":brain_container_image",
+    registry = "index.docker.io",
+    repository = "ice1n36/brain",
+)

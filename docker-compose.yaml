@@ -1,0 +1,5 @@
+version: '2'
+services:
+  brain:
+    restart: always
+    image: ice1n36/brain
