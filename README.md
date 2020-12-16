@@ -43,7 +43,7 @@ update dependencies
 build and run
 
 ```
-bazel run :brain
+ATLAS_USER=<username> ATLAS_PW=<pw> ATLAS_DB=<database> bazel run :brain
 ```
 
 ### Docker
@@ -66,8 +66,18 @@ bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 :brain_contai
 TODO
 
 ### Locally
+
+note: if running with just bazel, use port 80
+
+hello
 ```
 curl -X GET localhost:8081/hello
+```
+
+write network traffic
+
+```
+curl -X POST localhost:80/api/v1/writeNetworkTraffic -d '{"app_id":"com.test.app"}'
 ```
 
 # LICENSE
