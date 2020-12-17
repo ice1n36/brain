@@ -2,12 +2,14 @@ package clients
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/ice1n36/brain/models"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/config"
 )
 
 const (
@@ -25,18 +27,38 @@ type mongodb struct {
 	atlas_uri string
 }
 
-func NewMongoDatabaseClient() MobileDatabaseClient {
-	// TODO: add config support here (so docker deployment can be enabled)
-	username := os.Getenv("ATLAS_USER")
-	password := os.Getenv("ATLAS_PW")
-	database := os.Getenv("ATLAS_DB")
-	atlas_uri := fmt.Sprintf(_mongoAtlasURITemplate, username, password, database)
-	return &mongodb{
-		username:  username,
-		password:  password,
-		database:  database,
-		atlas_uri: atlas_uri,
+type mongoconfig struct {
+	AtlasUsername string `yaml:"atlas_user"`
+	AtlasPassword string `yaml:"atlas_pw"`
+	AtlasDatabase string `yaml:"atlas_db"`
+}
+
+func NewMongoDatabaseClient(cfg config.Provider) (MobileDatabaseClient, error) {
+	var mongocfg mongoconfig
+	if err := cfg.Get("mongo").Populate(&mongocfg); err != nil {
+		// fallback to using environment variables
+		mongocfg.AtlasUsername = os.Getenv("ATLAS_USER")
+		mongocfg.AtlasPassword = os.Getenv("ATLAS_PW")
+		mongocfg.AtlasDatabase = os.Getenv("ATLAS_DB")
 	}
+
+	if len(mongocfg.AtlasUsername) == 0 {
+		return nil, errors.New("Cannot retrieve atlas username from config or environment variable ATLAS_USER")
+	}
+	if len(mongocfg.AtlasPassword) == 0 {
+		return nil, errors.New("Cannot retrieve atlas password from config or environment variable ATLAS_PW")
+	}
+	if len(mongocfg.AtlasDatabase) == 0 {
+		return nil, errors.New("Cannot retrieve atlas database from config or environment variable ATLAS_DB")
+	}
+
+	atlas_uri := fmt.Sprintf(_mongoAtlasURITemplate, mongocfg.AtlasUsername, mongocfg.AtlasPassword, mongocfg.AtlasDatabase)
+	return &mongodb{
+		username:  mongocfg.AtlasUsername,
+		password:  mongocfg.AtlasPassword,
+		database:  mongocfg.AtlasDatabase,
+		atlas_uri: atlas_uri,
+	}, nil
 }
 
 func (m mongodb) WriteNetTraffic(ctx context.Context, mant *models.MobileAppNetTraffic) error {

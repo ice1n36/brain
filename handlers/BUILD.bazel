@@ -11,5 +11,6 @@ go_library(
     deps = [
         "//clients:go_default_library",
         "//models:go_default_library",
+        "@org_uber_go_config//:go_default_library",
     ],
 )

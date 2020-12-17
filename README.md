@@ -43,7 +43,7 @@ update dependencies
 build and run
 
 ```
-ATLAS_USER=<username> ATLAS_PW=<pw> ATLAS_DB=<database> bazel run :brain
+CONFIG_DIR=<path to config directory> bazel run :brain
 ```
 
 ### Docker

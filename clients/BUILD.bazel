@@ -9,5 +9,6 @@ go_library(
         "//models:go_default_library",
         "@org_mongodb_go_mongo_driver//mongo:go_default_library",
         "@org_mongodb_go_mongo_driver//mongo/options:go_default_library",
+        "@org_uber_go_config//:go_default_library",
     ],
 )
