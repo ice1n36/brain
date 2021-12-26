@@ -1,6 +1,6 @@
 # Brain
 
-‘Brain’, Penny’s dog and sidekick, is responsible for all things mobile data (e.g. storing and fetching mobile network data).
+‘Brain’, Penny’s dog and sidekick, is responsible for doing the leg work (e.g. storing data, fetching data, processing data, etc).
 
 ## Install
 
