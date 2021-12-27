@@ -1,12 +1,14 @@
-package cli
+package main
 
 import (
 	"fmt"
 	"os"
+
+	"github.com/ice1n36/brain/cmd"
 )
 
 func main() {
-	if err := cli.Execute(); err != nil {
+	if err := cmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

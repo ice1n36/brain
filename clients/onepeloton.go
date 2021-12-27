@@ -1,17 +1,21 @@
 package clients
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"time"
 
 	"go.uber.org/config"
-	"gopkg.in/square/go-jose.v2/json"
 )
 
 const (
-	_onePelotonAPIURL                        = "https://api.onepeloton.com"
+	_onePelotonAPIURL                        = "api.onepeloton.com"
 	_onePelotonLoginAPI                      = "auth/login"
 	_onePelotonGetWorkoutsAPI                = "api/user/%s/workouts"
 	_onePelotonGetWorkoutPerformanceGraphAPI = "api/workout/%s/performance_graph"
@@ -31,17 +35,23 @@ type OnePelotonWorkoutDetails struct {
 type OnePelotonAPIClient interface {
 	Login(ctx context.Context) (OnePelotonSession, error)
 	GetWorkoutIds(ctx context.Context, ops OnePelotonSession, amount int) ([]string, error)
-	GetWorkoutDetails(ctx context.Context, ops OnePelotonSession, workouts []string) ([]OnePeletonWorkoutDetails, error)
+	GetWorkoutDetails(ctx context.Context, ops OnePelotonSession, workouts []string) ([]OnePelotonWorkoutDetails, error)
 }
 
 type onepelotonclient struct {
 	username string
 	password string
+	client   *http.Client
 }
 
 type onepelotonconfig struct {
 	UsernameOrEmail string `yaml:"username_or_email"`
 	Password        string `yaml:"password"`
+}
+
+type loginresponse struct {
+	UserId    string `json:"user_id"`
+	SessionId string `json:"session_id"`
 }
 
 func NewOnePelotonAPIClient(cfg config.Provider) (OnePelotonAPIClient, error) {
@@ -51,7 +61,6 @@ func NewOnePelotonAPIClient(cfg config.Provider) (OnePelotonAPIClient, error) {
 		opcfg.UsernameOrEmail = os.Getenv("ONEPELOTON_USER")
 		opcfg.Password = os.Getenv("ONEPELOTON_PW")
 	}
-
 	if len(opcfg.UsernameOrEmail) == 0 {
 		return nil, errors.New("Cannot retrieve username from config or environment variable ONEPELOTON_USER")
 	}
@@ -62,6 +71,9 @@ func NewOnePelotonAPIClient(cfg config.Provider) (OnePelotonAPIClient, error) {
 	return &onepelotonclient{
 		username: opcfg.UsernameOrEmail,
 		password: opcfg.Password,
+		client: &http.Client{
+			Timeout: time.Second * 10,
+		},
 	}, nil
 }
 
@@ -71,37 +83,49 @@ func (o onepelotonclient) Login(ctx context.Context) (OnePelotonSession, error) 
 		"password":          o.password,
 	}
 	creds_json, err := json.Marshal(creds)
+	var ops OnePelotonSession
 	if err != nil {
-		return nil, errors.New("json marshalling error on creds")
+		return ops, errors.New("json marshalling error on creds")
 	}
+	loginURI := fmt.Sprintf("https://%s/%s", _onePelotonAPIURL, _onePelotonLoginAPI)
 
-	resp, err := http.Post(_onePelotonAPIURL+"/"+_onePelotonLoginAPI, "application/json", bytes.NewBuffer(creds_json))
+	request, err := http.NewRequest("POST", loginURI, bytes.NewBuffer(creds_json))
+	request.Header.Add("Content-Type", "application/json")
+	resp, err := o.client.Do(request)
 	if err != nil {
-		return nil, errors.New("post error")
+		fmt.Println(err)
+		return ops, errors.New("error in auth/login")
 	}
-	var res map[string]interface{}
-
-	json.NewDecoder(resp.Body).Decode(&res)
-	session_id := res["session_id"]
-	user_id := res["user_id"]
-
-	if session_id == nil || len(session_id) == 0 {
-		return nil, errors.New("nil or empty session_id")
-	}
-	if user_id == nil || len(user_id) == 0 {
-		return nil, errors.New("nil or empty user_id")
+	respBody := loginresponse{}
+	respBodyData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return ops, err
 	}
 
-	return &OnePelotonSession{
-		session_id: session_id,
-		user_id:    user_id,
-	}, nil
+	err = json.Unmarshal(respBodyData, &respBody)
+	if err != nil {
+		return ops, err
+	}
+
+	if len(respBody.SessionId) == 0 {
+		return ops, errors.New("empty session_id")
+	}
+	if len(respBody.UserId) == 0 {
+		return ops, errors.New("empty user_id")
+	}
+
+	ops.session_id = respBody.SessionId
+	ops.user_id = respBody.UserId
+	return ops, nil
 }
 
 func (o onepelotonclient) GetWorkoutIds(ctx context.Context, ops OnePelotonSession, amount int) ([]string, error) {
-
+	workouts := []string{}
+	return workouts, nil
 }
 
-func (o onepelotonclient) GetWorkoutDetails(ctx context.Context, ops OnePelotonSession, workouts []string) ([]OnePeletonWorkoutDetails, error) {
+func (o onepelotonclient) GetWorkoutDetails(ctx context.Context, ops OnePelotonSession, workouts []string) ([]OnePelotonWorkoutDetails, error) {
+	workoutDetails := []OnePelotonWorkoutDetails{}
+	return workoutDetails, nil
 
 }
