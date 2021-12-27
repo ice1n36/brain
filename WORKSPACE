@@ -533,3 +533,10 @@ go_repository(
     sum = "h1:0mgffUl7nfd+FpvXMVz4IDEaUSmT1ysygQC7qYo7sG4=",
     version = "v0.0.0-20190618225709-2cfd321de3ee",
 )
+
+go_repository(
+    name = "in_gopkg_square_go_jose_v2",
+    importpath = "gopkg.in/square/go-jose.v2",
+    sum = "h1:NGk74WTnPKBNUhNzQX7PYcTLUjoq7mzKk2OKbvwk2iI=",
+    version = "v2.6.0",
+)

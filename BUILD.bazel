@@ -21,6 +21,12 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
+go_binary(
+    name = "brain-cli",
+    embed = ["//cli:go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
 # load bazel rules for docker images
 load("@io_bazel_rules_docker//container:container.bzl", "container_push", "container_image")
 
