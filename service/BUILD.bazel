@@ -2,15 +2,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "peloton.go",
-        "root.go",
-    ],
-    importpath = "github.com/ice1n36/brain/cmd",
+    srcs = ["onepeloton.go"],
+    importpath = "github.com/ice1n36/brain/service",
     visibility = ["//visibility:public"],
     deps = [
-        "//service:go_default_library",
-        "@com_github_spf13_cobra//:go_default_library",
+        "//clients:go_default_library",
         "@org_uber_go_config//:go_default_library",
     ],
 )
